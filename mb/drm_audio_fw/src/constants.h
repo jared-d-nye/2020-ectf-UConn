@@ -2,6 +2,9 @@
 #define SRC_CONSTANTS_H_
 
 #include "xil_printf.h"
+#include "crypto.h"
+
+#define AES_BLOCK_SIZE 16
 
 // shared DDR address
 #define SHARED_DDR_BASE (0x20000000 + 0x1CC00000)
@@ -56,6 +59,7 @@ typedef struct {
 // struct to interpret drm metadata
 typedef struct __attribute__((__packed__)) {
     char md_size;
+    byte aes_iv[AES_BLOCK_SIZE];
     char owner_id;
     char num_regions;
     char num_users;
@@ -104,6 +108,7 @@ typedef volatile struct __attribute__((__packed__)) {
 // local store for drm metadata
 typedef struct {
     u8 md_size;
+    byte aes_iv[AES_BLOCK_SIZE];
     u8 owner_id;
     u8 num_regions;
     u8 rids[MAX_REGIONS];

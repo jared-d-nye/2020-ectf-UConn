@@ -3,42 +3,53 @@
 Description: Protects song by adding metadata or any other security measures
 Use: Once per song
 """
+import random
+import string
 import json
 import struct
+from subprocess import Popen, PIPE, STDOUT
 import os
 import wave
 from argparse import ArgumentParser
-import numpy as np
 
 
 class ProtectedSong(object):
-    """Example song object for protected song"""
-
     def __init__(self, path_to_song, metadata):
         """initialize values
         Args:
+            key (bytearray): 128-bit Speck key
+            nonce (bytearray): 128-bit Speck nonce
             path_to_song (string): file name where the song to be provisioned is stored
             metadata (bytearray): bytes containing metadata information
         """
+        
         self.song = path_to_song
-        self.full_song, self.original_song = self.read_song(path_to_song)
         self.metadata = metadata
 
-    def save_secured_song_to_wave(self, file_location):
-        """Saves secured song to wave file assuming all the same characteristics as original song
+    def save_secured_song_to_wave(self, key, file_location):
+        """ Saves secured song to wave file assuming all the same characteristics as original song
+            Encrypts a file using Speck (CCM mode) with the
+            given key.
         Args:
-            file_location (string): location to store the file including name"""
-        protected_wav = wave.open(os.path.abspath(file_location), 'wb')
-        protected_wav.setnchannels(self.original_song.getnchannels())
-        protected_wav.setsampwidth(self.original_song.getsampwidth())
-        protected_wav.setframerate(self.original_song.getframerate())
-        protected_wav.writeframes(self.metadata)
-
-        for val in self.full_song:
-            protected_wav_val = struct.pack('<h', val)
-            protected_wav.writeframesraw(protected_wav_val)
-
+            key:
+                The encryption key - a string that must be
+                either 16, 24 or 32 bytes long. Longer keys
+                are more secure.
+            file_location (string):
+                location to store the file including name
+        """
+        # Encrypt and sign (CCM) the WAV file and delete the cleartext
+        clear_wav = open(os.path.abspath(self.song), 'rb')
+        protected_wav = open(os.path.abspath(file_location), 'wb')
+        # Write encrypted data to file
+        nonce = os.urandom(16)
+        p = Popen(['./speck', '-e'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        plaintext = clear_wav.read()
+        speck_input = b''.join([nonce, key, f'{len(plaintext):012d}'.encode(), plaintext])
+        ciphertext = p.communicate(input=speck_input)[0]
+        [ protected_wav.write(x) for x in (nonce, ciphertext) ]
         protected_wav.close()
+        clear_wav.close()
 
     def read_song(self, path, metadata_frames=0):
         """Reads a wave file
@@ -52,10 +63,10 @@ class ProtectedSong(object):
         song = wave.open(os.path.abspath(path), 'r')
         if metadata_frames:
             song.readframes(metadata_frames)  # skip the metadata frames when assigning vals
-        vals = np.frombuffer(song.readframes(song.getnframes()), dtype=np.int16)
+        vals = song.readframes(song.getnframes())
         song.close()
         return vals, song
-
+    
 
 def create_metadata(regions, user, user_secret_location, region_info):
     """Returns a byte string formatted as follows:
@@ -71,6 +82,7 @@ def create_metadata(regions, user, user_secret_location, region_info):
         >>create_metadata(['USA', 'Canada'], 'user1', 'user_secrets.json', {'USA': 1, 'Canada':2})
         'x06/x00/x01/x00/x01/x02'
     """
+
     user_secrets = json.load(open(os.path.abspath(user_secret_location)))
 
     # note: metadata must be an even length since each sample is 2B long
@@ -87,22 +99,28 @@ def create_metadata(regions, user, user_secret_location, region_info):
 def main():
     parser = ArgumentParser(description='main interface to protect songs')
     parser.add_argument('--region-list', nargs='+', help='List of regions song can be played in', required=True)
-    parser.add_argument('--region-secrets-path', help='File location for the region secrets file',
-                        required=True)
+    parser.add_argument('--region-secrets-path', help='File location for the region secrets file', required=True)
     parser.add_argument('--outfile', help='path to save the protected song', required=True)
     parser.add_argument('--infile', help='path to unprotected song', required=True)
     parser.add_argument('--owner', help='owner of song', required=True)
     parser.add_argument('--user-secrets-path', help='File location for the user secrets file', required=True)
     args = parser.parse_args()
 
+    f = open('/home/vagrant/DRM_KEY.txt','r')
+    
+    key = bytes.fromhex(f.readline().strip())
+    f.close()
+
     regions = json.load(open(os.path.abspath(args.region_secrets_path)))
     try:
         metadata = create_metadata(args.region_list, args.owner, args.user_secrets_path, regions)
     except ValueError:
         raise ValueError('Ensure all user IDs are integers and all regions are in the provided region_information.json')
+
     protected_song = ProtectedSong(args.infile, metadata)
-    protected_song.save_secured_song_to_wave(args.outfile)
+    protected_song.save_secured_song_to_wave(key, args.outfile)
 
 
 if __name__ == '__main__':
     main()
+

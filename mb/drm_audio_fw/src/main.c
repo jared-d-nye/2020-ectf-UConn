@@ -15,10 +15,10 @@
 #include "xintc.h"
 #include "constants.h"
 #include "sleep.h"
+#include "crypto.h"
 
 
 //////////////////////// GLOBALS ////////////////////////
-
 
 // audio DMA access
 static XAxiDma sAxiDma;
@@ -88,11 +88,12 @@ int rid_to_region_name(char rid, char **region_name, int provisioned_only) {
 // looks up the rid corresponding to the region name
 int region_name_to_rid(char *region_name, char *rid, int provisioned_only) {
     for (int i = 0; i < NUM_REGIONS; i++) {
-        if (!strcmp(region_name, REGION_NAMES[i]) &&
-            (!provisioned_only || is_provisioned_rid(REGION_IDS[i]))) {
-            *rid = REGION_IDS[i];
-            return TRUE;
-        }
+        if (strlen(region_name) == strlen(REGION_NAMES[i]))
+            if (!strcmp(region_name, REGION_NAMES[i]) &&
+                (!provisioned_only || is_provisioned_rid(REGION_IDS[i]))) {
+                *rid = REGION_IDS[i];
+                return TRUE;
+            }
     }
 
     mb_printf("Could not find region name '%s'\r\n", region_name);
@@ -131,11 +132,12 @@ int uid_to_username(char uid, char **username, int provisioned_only) {
 // looks up the uid corresponding to the username
 int username_to_uid(char *username, char *uid, int provisioned_only) {
     for (int i = 0; i < NUM_USERS; i++) {
-        if (!strcmp(username, USERNAMES[USER_IDS[i]]) &&
-            (!provisioned_only || is_provisioned_uid(USER_IDS[i]))) {
-            *uid = USER_IDS[i];
-            return TRUE;
-        }
+        if (strlen(username) == strlen(USERNAMES[USER_IDS[i]]))
+            if (!strcmp(username, USERNAMES[USER_IDS[i]]) &&
+                (!provisioned_only || is_provisioned_uid(USER_IDS[i]))) {
+                *uid = USER_IDS[i];
+                return TRUE;
+            }
     }
 
     mb_printf("Could not find username '%s'\r\n", username);
@@ -150,6 +152,7 @@ void load_song_md() {
     s.song_md.owner_id = c->song.md.owner_id;
     s.song_md.num_regions = c->song.md.num_regions;
     s.song_md.num_users = c->song.md.num_users;
+    memcpy(s.song_md.aes_iv, c->song.md.aes_iv, BLOCK_LEN);
     memcpy(s.song_md.rids, (void *)get_drm_rids(c->song), s.song_md.num_regions);
     memcpy(s.song_md.uids, (void *)get_drm_uids(c->song), s.song_md.num_users);
 }
@@ -206,12 +209,13 @@ int is_locked() {
 // returns the size of the metadata in buf (including the metadata size field)
 // song metadata should be loaded before call
 int gen_song_md(char *buf) {
-    buf[0] = ((5 + s.song_md.num_regions + s.song_md.num_users) / 2) * 2; // account for parity
+    buf[0] = ((21 + s.song_md.num_regions + s.song_md.num_users) / 2) * 2; // account for parity
     buf[1] = s.song_md.owner_id;
-    buf[2] = s.song_md.num_regions;
-    buf[3] = s.song_md.num_users;
-    memcpy(buf + 4, s.song_md.rids, s.song_md.num_regions);
-    memcpy(buf + 4 + s.song_md.num_regions, s.song_md.uids, s.song_md.num_users);
+    memcpy(buf + 2, s.song_md.aes_iv, BLOCK_LEN);
+    buf[18] = s.song_md.num_regions;
+    buf[19] = s.song_md.num_users;
+    memcpy(buf + 20, s.song_md.rids, s.song_md.num_regions);
+    memcpy(buf + 20 + s.song_md.num_regions, s.song_md.uids, s.song_md.num_users);
 
     return buf[0];
 }
@@ -232,22 +236,23 @@ void login() {
             // search for matching username
             if (!strcmp((void*)c->username, USERNAMES[PROVISIONED_UIDS[i]])) {
                 // check if pin matches
-                if (!strcmp((void*)c->pin, PROVISIONED_PINS[i])) {
-                    //update states
-                    s.logged_in = 1;
-                    c->login_status = 1;
-                    memcpy(s.username, (void*)c->username, USERNAME_SZ);
-                    memcpy(s.pin, (void*)c->pin, MAX_PIN_SZ);
-                    s.uid = PROVISIONED_UIDS[i];
-                    mb_printf("Logged in for user '%s'\r\n", c->username);
-                    return;
-                } else {
-                    // reject login attempt
-                    mb_printf("Incorrect pin for user '%s'\r\n", c->username);
-                    memset((void*)c->username, 0, USERNAME_SZ);
-                    memset((void*)c->pin, 0, MAX_PIN_SZ);
-                    return;
-                }
+                if (strlen((void*)c->pin) == strlen(PROVISIONED_PINS[i]))
+                    if (!strcmp((void*)c->pin, PROVISIONED_PINS[i])) {
+                        //update states
+                        s.logged_in = 1;
+                        c->login_status = 1;
+                        memcpy(s.username, (void*)c->username, USERNAME_SZ);
+                        memcpy(s.pin, (void*)c->pin, MAX_PIN_SZ);
+                        s.uid = PROVISIONED_UIDS[i];
+                        mb_printf("Logged in for user '%s'\r\n", c->username);
+                        return;
+                    } else {
+                        // reject login attempt
+                        mb_printf("Incorrect pin for user '%s'\r\n", c->username);
+                        memset((void*)c->username, 0, USERNAME_SZ);
+                        memset((void*)c->pin, 0, MAX_PIN_SZ);
+                        return;
+                    }
             }
         }
 
@@ -280,11 +285,13 @@ void query_player() {
     c->query.num_users = NUM_PROVISIONED_USERS;
 
     for (int i = 0; i < NUM_PROVISIONED_REGIONS; i++) {
-        strcpy((char *)q_region_lookup(c->query, i), REGION_NAMES[PROVISIONED_RIDS[i]]);
+        if (((char *)q_region_lookup(c->query, i)) == (strlen(REGION_NAMES[PROVISIONED_RIDS[i]])))
+            strcpy((char *)q_region_lookup(c->query, i), REGION_NAMES[PROVISIONED_RIDS[i]]);
     }
 
     for (int i = 0; i < NUM_PROVISIONED_USERS; i++) {
-        strcpy((char *)q_user_lookup(c->query, i), USERNAMES[i]);
+        if (((char *)q_user_lookup(c->query, i)) == (strlen(USERNAMES[i])))
+            strcpy((char *)q_user_lookup(c->query, i), USERNAMES[i]);
     }
 
     mb_printf("Queried player (%d regions, %d users)\r\n", c->query.num_regions, c->query.num_users);
@@ -304,18 +311,21 @@ void query_song() {
 
     // copy owner name
     uid_to_username(s.song_md.owner_id, &name, FALSE);
-    strcpy((char *)c->query.owner, name);
+    if (((char *)c->query.owner) == (name))
+        strcpy((char *)c->query.owner, name);
 
     // copy region names
     for (int i = 0; i < s.song_md.num_regions; i++) {
         rid_to_region_name(s.song_md.rids[i], &name, FALSE);
-        strcpy((char *)q_region_lookup(c->query, i), name);
+        if (((char *)q_region_lookup(c->query, i)) == (name))
+            strcpy((char *)q_region_lookup(c->query, i), name);
     }
 
     // copy authorized uid names
     for (int i = 0; i < s.song_md.num_users; i++) {
         uid_to_username(s.song_md.uids[i], &name, FALSE);
-        strcpy((char *)q_user_lookup(c->query, i), name);
+        if (((char *)q_user_lookup(c->query, i)) == (name))
+            strcpy((char *)q_user_lookup(c->query, i), name);
     }
 
     mb_printf("Queried song (%d regions, %d users)\r\n", c->query.num_regions, c->query.num_users);
@@ -361,7 +371,6 @@ void share_song() {
     mb_printf("Shared song with '%s'\r\n", c->username);
 }
 
-
 // plays a song and looks for play-time commands
 void play_song() {
     u32 counter = 0, rem, cp_num, cp_xfil_cnt, offset, dma_cnt, length, *fifo_fill;
@@ -384,6 +393,9 @@ void play_song() {
 
     rem = length;
     fifo_fill = (u32 *)XPAR_FIFO_COUNT_AXI_GPIO_0_BASEADDR;
+
+    byte currIv[BLOCK_LEN];
+    memcpy(currIv, s.song_md.aes_iv, BLOCK_LEN);
 
     // write entire file to two-block codec fifo
     // writes to one block while the other is being played
@@ -419,11 +431,47 @@ void play_song() {
         cp_num = (rem > CHUNK_SZ) ? CHUNK_SZ : rem;
         offset = (counter++ % 2 == 0) ? 0 : CHUNK_SZ;
 
-        // do first mem cpy here into DMA BRAM
-        Xil_MemCpy((void *)(XPAR_MB_DMA_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + offset),
-                   (void *)(get_drm_song(c->song) + length - rem),
-                   (u32)(cp_num));
+        // Perform decryption
+        if(cp_num % BLOCK_LEN == 0) {
+                int res = decryptAndMac(
+                        currIv,
+			DRM_KEY,
+                        XPAR_MB_DMA_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + offset,
+                        get_drm_song(c->song) + length - rem,
+                        cp_num
+                );
 
+                if(res != 0) {
+                        mb_printf("Stopping playback...");
+                        return;
+                }
+        } else {
+                int extraBytes = cp_num + (cp_num % BLOCK_LEN);
+
+                // First, copy ctext song data to bram
+                Xil_MemCpy((void *)(XPAR_MB_DMA_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + offset),
+                           (void *)(get_drm_song(c->song) + length - rem),
+                           (u32)(cp_num));
+
+                // Then, decrypt in place. 
+                // (extraBytes extraneous bytes will be "decrypted", but this is fine;
+                //  they will be ignored during song play, b/c song play only uses cp_num)
+                int res = decryptAndMac(
+                        currIv,
+			DRM_KEY,
+                        XPAR_MB_DMA_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + offset,
+                        XPAR_MB_DMA_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + offset,
+                        cp_num + extraBytes
+                );
+                if(res != 0) {
+                        mb_printf("Stopping playback...");
+                        return;
+                }
+        }
+
+        // Increment IV for next round
+        incrementIv(currIv, currIv, BLOCK_LEN, CHUNK_SZ / BLOCK_LEN);
+                
         cp_xfil_cnt = cp_num;
 
         while (cp_xfil_cnt > 0) {
@@ -546,6 +594,8 @@ int main() {
             usleep(500);
             set_stopped();
         }
+        //zero out inputs
+        memset((void*)c, 0, sizeof(cmd_channel));
     }
 
     cleanup_platform();

@@ -20,7 +20,16 @@ def main(user_list, outfile):
         return 0
 
     try:
-        user_dict = {user.split(":")[0]: {"pin": user.split(":")[1], "id": num} for num, user in enumerate(user_list)}
+        user_dict = {}
+        for num, user in enumerate(user_list):
+            name, pin = user.split(":")
+            salt = os.urandom(16)
+
+            user_dict[name] = {
+                "id": num,
+                "hash": bytes.hex(scrypt(pin, salt, 16, N=2**14, r=8, p=1)),
+                "salt": bytes.hex(salt)
+            }
     except IndexError:
         raise Exception(
             "Unable to parse user name and pin. Please make sure you entered the user-list as "

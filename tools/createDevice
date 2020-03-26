@@ -42,6 +42,8 @@ def main(region_names, user_names, user_secrets, region_secrets, device_dir):
               "Please ensure all regions entered are in the list: {user_secrets}".format(e=e, user_secrets=user_secrets.keys()))
         return
 
+    f = open('/home/vagrant/DRM_KEY.txt','r')
+
     # write secrets
     device_secrets.write(f'''
 #ifndef SECRETS_H
@@ -60,11 +62,16 @@ const u8 USER_IDS[] = {{ {", ".join([str(user_secrets[u]['id']) for u in user_na
 
 #define NUM_PROVISIONED_USERS {len(user_names)}
 const u8 PROVISIONED_UIDS[] = {{ {", ".join(uids)} }};
-const char *PROVISIONED_PINS[] = {{ {", ".join(['"' + user_secrets[u]['pin'] + '"' for u in user_names])} }};
+const char *PROVISIONED_PINS[] = {{ {", ".join(['"' + user_secrets[u]['hash'] + '"' for u in user_names])} }};
+const char *PROVISIONED_SALTS[] = {{ {", ".join(['"' + user_secrets[u]['salt'] + '"' for u in user_names])} }}
+
+#define DRM_KEY "{bytes.fromhex(f.readline().strip())}"
 
 #endif // SECRETS_H
 ''')
 
+f.close()
+os.remove('/home/vagrant/DRM_KEY.txt')#Delete key file
 
 def get_args():
     """gets arguments from command line"""
