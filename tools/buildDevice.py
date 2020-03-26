@@ -37,7 +37,7 @@ from combineBitstream import combine_bitstream
 build_flags = ["cs", "cp", "gb", "bm", "cb", "all"]
 proj_name = "cora_z7_07s"
 default_bif = "output.bif"
-input_secrets = "device_secrets.h"
+input_secrets = "device_secrets"
 output_secrets = "secrets.h"
 secrets_dir = ""
 
