@@ -111,7 +111,7 @@ void encryptAndMac(const byte* iv, const byte* key, byte* ctext, const byte* pte
   cbcMac(key, ctext, ctext + 2*ELEMENT_BYTE_LEN, msgLen);
 }
 
-int decryptAndMac(const byte* iv, const byte* key, byte* ptext, const byte* ctext, unsigned int msgLen) {
+int decryptAndMac(const byte* iv, const char* key, byte* ptext, const byte* ctext, unsigned int msgLen) {
     byte canonicalMac[2*ELEMENT_BYTE_LEN];
     cbcMac(key, canonicalMac, ctext + 2*ELEMENT_BYTE_LEN, msgLen);
 
