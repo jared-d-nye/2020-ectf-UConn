@@ -48,7 +48,7 @@ void encryptAndMac(const byte* iv, const byte* key, byte* ctext, const byte* pte
 // 5. The first 2*ELEMENT_BYTE_LEN bytes of ctext must contain the MAC; the rest must contain the ciphertext data. [This requirement is met if encryptAndMac is create ctext.]
 // First verifies the MAC.  If verification fails, returns -1.  Otherwise, decrypts the data, places the plaintext in ptext, and returns 0. 
 // Assumes the "encrypt-then-MAC" strategy.
-int decryptAndMac(const byte* iv, const byte* key, byte* ptext, const byte* ctext, unsigned int msgLen);
+int decryptAndMac(const byte* iv, const char* key, byte* ptext, const byte* ctext, unsigned int msgLen);
 
 // Increments iv by incrementBy, places result in ivNew
 // Expects:
