@@ -36,7 +36,6 @@
 								<option id="xilinx.gnu.compiler.dircategory.includes.1152677060" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/drm_audio_fw_bsp/microblaze_0/include}&quot;"/>
 								</option>
-								<option id="xilinx.gnu.compiler.option.debugging.other.1282216953" name="Other debugging flags" superClass="xilinx.gnu.compiler.option.debugging.other" value="" valueType="string"/>
 								<option id="xilinx.gnu.compiler.option.warnings.allwarn.1163152597" name="All warnings (-Wall)" superClass="xilinx.gnu.compiler.option.warnings.allwarn" value="false" valueType="boolean"/>
 								<option id="xilinx.gnu.compiler.option.warnings.toerrors.240194636" name="Warnings as errors (-Werror)" superClass="xilinx.gnu.compiler.option.warnings.toerrors" value="false" valueType="boolean"/>
 								<inputType id="xilinx.gnu.compiler.input.897023826" name="C source files" superClass="xilinx.gnu.compiler.input"/>
