@@ -394,7 +394,7 @@ void play_song() {
     rem = length;
     fifo_fill = (u32 *)XPAR_FIFO_COUNT_AXI_GPIO_0_BASEADDR;
 
-    byte currIv[BLOCK_LEN];
+    char currIv[BLOCK_LEN];
     memcpy(currIv, s.song_md.aes_iv, BLOCK_LEN);
 
     // write entire file to two-block codec fifo

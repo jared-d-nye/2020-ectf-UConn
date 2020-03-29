@@ -59,7 +59,7 @@ typedef struct {
 // struct to interpret drm metadata
 typedef struct __attribute__((__packed__)) {
     char md_size;
-    byte aes_iv[AES_BLOCK_SIZE];
+    char aes_iv[AES_BLOCK_SIZE];
     char owner_id;
     char num_regions;
     char num_users;
@@ -108,7 +108,7 @@ typedef volatile struct __attribute__((__packed__)) {
 // local store for drm metadata
 typedef struct {
     u8 md_size;
-    byte aes_iv[AES_BLOCK_SIZE];
+    char aes_iv[AES_BLOCK_SIZE];
     u8 owner_id;
     u8 num_regions;
     u8 rids[MAX_REGIONS];
