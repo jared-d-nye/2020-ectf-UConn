@@ -108,7 +108,7 @@ def main():
 
     f = open('/home/vagrant/DRM_KEY.txt','r')
     
-    key = bytes.fromhex(f.readline().strip())
+    key = (f.readline().strip())
     f.close()
 
     regions = json.load(open(os.path.abspath(args.region_secrets_path)))
