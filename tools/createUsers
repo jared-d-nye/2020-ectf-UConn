@@ -1,8 +1,9 @@
-#!/usr/bin/env python3
+ #!/usr/bin/env python3
 """
 Description: Creates user specific secrets
 Use: Once per user
 """
+
 import os
 import json
 from argparse import ArgumentParser
@@ -35,6 +36,7 @@ def main(user_list, outfile):
         raise Exception(
             "Unable to parse user name and pin. Please make sure you entered the user-list as "
             "space seperated pairs of usernames and pins. Example: --user-list user1:12345678 user2:12345689")
+    
     info = json.dumps(user_dict)
     secrets.write(info)
     secrets.close()

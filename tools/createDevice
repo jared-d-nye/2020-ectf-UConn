@@ -7,6 +7,8 @@ import os
 import json
 from argparse import ArgumentParser
 
+def bytes_to_c_arr(data)
+	return [format(b, '#04X') for b in data]
 
 
 def main(region_names, user_names, user_secrets, region_secrets, device_dir):
@@ -44,6 +46,11 @@ def main(region_names, user_names, user_secrets, region_secrets, device_dir):
 
     f = open('/home/vagrant/DRM_KEY.txt','r')
 
+    key = f.readline().strip()
+    t = iter(key)
+    key_str = "\\x" + "\\x".join(a+b for a,b in zip(t,t))
+
+
     # write secrets
     device_secrets.write(f'''
 #ifndef SECRETS_H
@@ -65,7 +72,7 @@ const u8 PROVISIONED_UIDS[] = {{ {", ".join(uids)} }};
 const char *PROVISIONED_PINS[] = {{ {", ".join(['"' + user_secrets[u]['hash'] + '"' for u in user_names])} }};
 const char *PROVISIONED_SALTS[] = {{ {", ".join(['"' + user_secrets[u]['salt'] + '"' for u in user_names])} }};
 
-#define DRM_KEY "{(f.readline().strip())}"
+#define DRM_KEY "{{ key_str }}"
 
 #endif // SECRETS_H
 ''')
