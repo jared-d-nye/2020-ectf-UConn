@@ -6,10 +6,8 @@ Use: Once per device
 import os
 import json
 from argparse import ArgumentParser
-
-def bytes_to_c_arr(data)
-	return [format(b, '#04X') for b in data]
-
+import coedcs
+import binascii
 
 def main(region_names, user_names, user_secrets, region_secrets, device_dir):
     file_name = "device_secrets"
