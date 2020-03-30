@@ -8,7 +8,7 @@ def get_hex(val):
     return ''.join('{:02x}'.format(x) for x in val)
 
 def main():
-    key = os.urandom(KEY_SIZE).hex()
+    key = os.urandom(KEY_SIZE)
 
     #commands = f'export DRM_KEY={get_hex(key)}\n'
     #sys.stdout.write(commands)
