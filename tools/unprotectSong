@@ -39,7 +39,7 @@ def main():
     args = parser.parse_args()
 
     f = open(args.keyfile)
-    key = (f.readline().strip())
+    key = bytes.fromhex(f.readline().strip())
     f.close()
 
     read_song(key, args.infile, args.outfile)
