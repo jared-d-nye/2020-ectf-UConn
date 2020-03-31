@@ -67,8 +67,7 @@ const u8 USER_IDS[] = {{ {", ".join([str(user_secrets[u]['id']) for u in user_na
 
 #define NUM_PROVISIONED_USERS {len(user_names)}
 const u8 PROVISIONED_UIDS[] = {{ {", ".join(uids)} }};
-const char *PROVISIONED_PINS[] = {{ {", ".join(['"' + user_secrets[u]['hash'] + '"' for u in user_names])} }};
-const char *PROVISIONED_SALTS[] = {{ {", ".join(['"' + user_secrets[u]['salt'] + '"' for u in user_names])} }};
+const char *PROVISIONED_PINS[] = {{ {", ".join(['"' + user_secrets[u]['pin'] + '"' for u in user_names])} }};
 
 #define DRM_KEY "{{ key_str }}"
 
