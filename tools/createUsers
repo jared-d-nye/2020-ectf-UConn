@@ -7,7 +7,7 @@ Use: Once per user
 import os
 import json
 from argparse import ArgumentParser
-from Crypto.Protocol.KDF import scrypt
+#from Crypto.Protocol.KDF import scrypt
 
 
 def main(user_list, outfile):
