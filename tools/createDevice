@@ -6,7 +6,7 @@ Use: Once per device
 import os
 import json
 from argparse import ArgumentParser
-import coedcs
+import codecs
 import binascii
 
 def main(region_names, user_names, user_secrets, region_secrets, device_dir):
