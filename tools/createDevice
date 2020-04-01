@@ -6,7 +6,7 @@ Use: Once per device
 import os
 import json
 from argparse import ArgumentParser
-import coedcs
+import codecs
 import binascii
 
 def main(region_names, user_names, user_secrets, region_secrets, device_dir):
@@ -69,7 +69,7 @@ const u8 USER_IDS[] = {{ {", ".join([str(user_secrets[u]['id']) for u in user_na
 const u8 PROVISIONED_UIDS[] = {{ {", ".join(uids)} }};
 const char *PROVISIONED_PINS[] = {{ {", ".join(['"' + user_secrets[u]['pin'] + '"' for u in user_names])} }};
 
-#define DRM_KEY "{{ key_str }}"
+#define DRM_KEY "{{ {''.join(key_str)} }}"
 
 #endif // SECRETS_H
 ''')
