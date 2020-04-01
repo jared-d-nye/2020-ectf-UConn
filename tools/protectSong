@@ -45,6 +45,12 @@ class ProtectedSong(object):
         nonce = os.urandom(16)
         p = Popen(['./speck', '-e'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
         plaintext = clear_wav.read()
+        songLength = len(plaintext)
+        r = songLength % 16
+        # Pad plaintext with 0's until its length is a multiple of 16
+        if (r != 0):
+            for x in range (0, (16 - r)):
+                plaintext += bytes([0]) 
         speck_input = b''.join([nonce, key, f'{len(plaintext):012d}'.encode(), plaintext])
         ciphertext = p.communicate(input=speck_input)[0]
         [ protected_wav.write(x) for x in (nonce, ciphertext) ]
