@@ -1,4 +1,3 @@
-
 ################################################################
 # This is a generated script based on design: system
 #
@@ -1528,16 +1527,14 @@ HDL_ATTRIBUTE.DEBUG {true} \
   create_bd_addr_seg -range 0x40000000 -offset 0x40000000 [get_bd_addr_spaces mdm_0/Data] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_M_AXI_GP0] SEG_processing_system7_0_GP0_M_AXI_GP0
   exclude_bd_addr_seg [get_bd_addr_segs mdm_0/Data/SEG_processing_system7_0_GP0_M_AXI_GP0]
 
-### Attempt At Removing MDM
-#  delete_bd_objs [get_bd_intf_nets mdm_0_M_AXI] [get_bd_intf_nets mdm_0_MBDEBUG_0] [get_bd_intf_nets ps7_0_axi_periph_M00_AXI] [get_bd_nets mdm_0_Debug_SYS_Rst] [get_bd_cells mdm_0]
-###############################33
   create_bd_addr_seg -range 0x40000000 -offset 0x40000000 [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_M_AXI_GP0] SEG_processing_system7_0_GP0_M_AXI_GP0
   exclude_bd_addr_seg [get_bd_addr_segs microblaze_0/Data/SEG_processing_system7_0_GP0_M_AXI_GP0]
 
   create_bd_addr_seg -range 0x40000000 -offset 0x40000000 [get_bd_addr_spaces microblaze_0/Instruction] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_M_AXI_GP0] SEG_processing_system7_0_GP0_M_AXI_GP0
   exclude_bd_addr_seg [get_bd_addr_segs microblaze_0/Instruction/SEG_processing_system7_0_GP0_M_AXI_GP0]
 
-
+  delete_bd_objs [get_bd_intf_nets mdm_0_M_AXI] [get_bd_intf_nets mdm_0_MBDEBUG_0] [get_bd_nets mdm_0_Debug_SYS_Rst] [get_bd_intf_nets ps7_0_axi_periph_M00_AXI] [get_bd_cells mdm_0]
+  set_property -dict [list CONFIG.C_DEBUG_ENABLED {0}] [get_bd_cells microblaze_0]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -1552,5 +1549,3 @@ HDL_ATTRIBUTE.DEBUG {true} \
 ##################################################################
 
 create_root_design ""
-
-
