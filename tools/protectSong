@@ -10,6 +10,7 @@ import struct
 from subprocess import Popen, PIPE, STDOUT
 import os
 import wave
+import sys
 from argparse import ArgumentParser
 
 
@@ -53,13 +54,14 @@ class ProtectedSong(object):
                 plaintext += bytes([0]) 
         speck_input = b''.join([nonce, key, f'{len(plaintext):012d}'.encode(), plaintext])
         ciphertext = p.communicate(input=speck_input)[0]
-        oldStdout = sys.stdout
-        sys.stdout = open(os.path.abspath(file_location), "wb")
-        sys.stdout.write(nonce)
+        stdout = sys.stdout
+        sys.stdout = open(os.path.abspath(file_location), "w")
+        sys.stdout.buffer.write(nonce)
         sys.stdout.buffer.write(ciphertext)
-        sys.stdout = oldStdout
+        sys.stdout.close()
+        sys.stdout = stdout
         #[ protected_wav.write(x) for x in (nonce, ciphertext) ]
-        protected_wav.close()
+        #protected_wav.close()
         clear_wav.close()
 
     def read_song(self, path, metadata_frames=0):
