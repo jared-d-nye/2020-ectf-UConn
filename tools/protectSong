@@ -40,7 +40,7 @@ class ProtectedSong(object):
         """
         # Encrypt and sign (CCM) the WAV file and delete the cleartext
         clear_wav = open(os.path.abspath(self.song), 'rb')
-        protected_wav = open(os.path.abspath(file_location), 'wb')
+        #protected_wav = open(os.path.abspath(file_location), 'wb')
         # Write encrypted data to file
         nonce = os.urandom(16)
         p = Popen(['./speck', '-e'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
@@ -53,7 +53,12 @@ class ProtectedSong(object):
                 plaintext += bytes([0]) 
         speck_input = b''.join([nonce, key, f'{len(plaintext):012d}'.encode(), plaintext])
         ciphertext = p.communicate(input=speck_input)[0]
-        [ protected_wav.write(x) for x in (nonce, ciphertext) ]
+        oldStdout = sys.stdout
+        sys.stdout = open(os.path.abspath(file_location), "wb")
+        sys.stdout.write(nonce)
+        sys.stdout.buffer.write(ciphertext)
+        sys.stdout = oldStdout
+        #[ protected_wav.write(x) for x in (nonce, ciphertext) ]
         protected_wav.close()
         clear_wav.close()
 
