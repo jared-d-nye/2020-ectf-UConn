@@ -594,8 +594,6 @@ int main() {
             usleep(500);
             set_stopped();
         }
-        //zero out inputs
-        memset((void*)c, 0, sizeof(cmd_channel));
     }
 
     cleanup_platform();
