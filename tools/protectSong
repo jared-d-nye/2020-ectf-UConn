@@ -91,6 +91,7 @@ def create_metadata(regions, user, user_secret_location, region_info, aes_iv):
         user (string): user name for owner of the song
         user_secret_location (string): path to user secrets file
         region_info (dict): mapping of regions provided by region_information.json
+        aes_iv (byte[]): store the iv for use in the microblaze
     Returns:
         metadata (bytes): bytes of encoded metadata
     Example:
@@ -104,8 +105,7 @@ def create_metadata(regions, user, user_secret_location, region_info, aes_iv):
     # and ARM processors require memory accesses to be aligned to the type size
     metadata = struct.pack(
         '=3B{regions_length}s{regions_len_2}s'.format(regions_length=len(regions), regions_len_2=len(regions) % 2),
-        aes_iv,
-        int(user_secrets[user]['id']), len(regions), 0,
+        int(user_secrets[user]['id']), aes_iv, len(regions), 0,
         bytes([region_info[str(r)] for r in regions]),
         b'\x00' if len(regions) % 2 else b'')
 
