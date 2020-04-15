@@ -27,7 +27,7 @@ class ProtectedSong(object):
         self.song = path_to_song
         self.metadata = metadata
 
-    def save_secured_song_to_wave(self, key, file_location):
+    def save_secured_song_to_wave(self, key, file_location, aes_iv):
         """ Saves secured song to wave file assuming all the same characteristics as original song
             Encrypts a file using Speck (CCM mode) with the
             given key.
@@ -43,9 +43,11 @@ class ProtectedSong(object):
         clear_wav = open(os.path.abspath(self.song), 'rb')
         #protected_wav = open(os.path.abspath(file_location), 'wb')
         # Write encrypted data to file
-        nonce = os.urandom(16)
+        nonce = aes_iv
         p = Popen(['./speck', '-e'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
         plaintext = clear_wav.read()
+        # add metadata to front of songdata
+        plaintext = self.metadata + plaintext
         songLength = len(plaintext)
         r = songLength % 16
         # Pad plaintext with 0's until its length is a multiple of 16
@@ -81,7 +83,7 @@ class ProtectedSong(object):
         return vals, song
     
 
-def create_metadata(regions, user, user_secret_location, region_info):
+def create_metadata(regions, user, user_secret_location, region_info, aes_iv):
     """Returns a byte string formatted as follows:
     METADATA_LENGTH(1B)/ownerID(1B)/REGION_LEN(1B)/USER_LEN(1B)/REGIONID1(1B)/REGIONID2 (1B)/.../opt. parity
     Args:
@@ -102,6 +104,7 @@ def create_metadata(regions, user, user_secret_location, region_info):
     # and ARM processors require memory accesses to be aligned to the type size
     metadata = struct.pack(
         '=3B{regions_length}s{regions_len_2}s'.format(regions_length=len(regions), regions_len_2=len(regions) % 2),
+        aes_iv,
         int(user_secrets[user]['id']), len(regions), 0,
         bytes([region_info[str(r)] for r in regions]),
         b'\x00' if len(regions) % 2 else b'')
@@ -124,14 +127,17 @@ def main():
     key = bytes.fromhex(f.readline().strip())
     f.close()
 
+    # initialize aes_iv for use in createmetadata()
+    aes_iv = os.urandom(16)
+
     regions = json.load(open(os.path.abspath(args.region_secrets_path)))
     try:
-        metadata = create_metadata(args.region_list, args.owner, args.user_secrets_path, regions)
+        metadata = create_metadata(args.region_list, args.owner, args.user_secrets_path, regions, aes_iv)
     except ValueError:
         raise ValueError('Ensure all user IDs are integers and all regions are in the provided region_information.json')
 
     protected_song = ProtectedSong(args.infile, metadata)
-    protected_song.save_secured_song_to_wave(key, args.outfile)
+    protected_song.save_secured_song_to_wave(key, args.outfile, aes_iv)
 
 
 if __name__ == '__main__':
