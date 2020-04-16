@@ -148,10 +148,25 @@ int username_to_uid(char *username, char *uid, int provisioned_only) {
 
 // loads the song metadata in the shared buffer into the local struct
 void load_song_md() {
+// Decrypt just the metadata for the query and share functions to be able to access
+// and change the metadata
+// decryptAndMac() takes a constant Iv, so no need to worry about Iv getting incremented
+/*
+
+    decryptAndMac(
+        c->song.aes_iv,
+        DRM_KEY,
+        XPAR_MB_DMA_AXI_BRAM_CTRL_0_S_AXI_BASEADDR,
+        c->song,
+        BLOCK_LEN * 2
+    );
+*/
     s.song_md.md_size = c->song.md.md_size;
     s.song_md.owner_id = c->song.md.owner_id;
     s.song_md.num_regions = c->song.md.num_regions;
     s.song_md.num_users = c->song.md.num_users;
+// The current IV should be saved so when gen_song_md() is called it saves
+// the original IV, as song will be completely encrypted next time it is called
     memcpy(s.song_md.aes_iv, c->song.md.aes_iv, BLOCK_LEN);
     memcpy(s.song_md.rids, (void *)get_drm_rids(c->song), s.song_md.num_regions);
     memcpy(s.song_md.uids, (void *)get_drm_uids(c->song), s.song_md.num_users);
@@ -377,6 +392,32 @@ void play_song() {
 
     mb_printf("Reading Audio File...");
     load_song_md();
+
+    // Instead of load_song_md(), since we will need the metadata, but also the updated Iv
+    // from where the metadata plus its paddedBytes left off, decrypt that information here
+    /*
+        char currIv[BLOCK_LEN];
+        memcpy(currIv, c.song_md.aes_iv, BLOCK_LEN)
+        decryptAndMac(
+            currIv
+            DRM_KEY,
+            XPAR_MB_DMA_AXI_BRAM_CTRL_0_S_AXI_BASEADDR,
+            get_drm_song(c->song),
+            BLOCK_LEN * 2
+        );
+
+        s.song_md.md_size = c->song.md.md_size;
+        s.song_md.owner_id = c->song.md.owner_id;
+        s.song_md.num_regions = c->song.md.num_regions;
+        s.song_md.num_users = c->song.md.num_users;
+        memcpy(s.song_md.rids, (void *)get_drm_rids(c->song), s.song_md.num_regions);
+        memcpy(s.song_md.uids, (void *)get_drm_uids(c->song), s.song_md.num_users);
+        }
+
+
+        incrementIv(currIv, currIv, BLOCK_LEN, BLOCK_LEN * 2)
+    */
+
 
     // get WAV length
     length = c->song.wav_size;
