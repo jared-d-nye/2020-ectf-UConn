@@ -226,9 +226,9 @@ int is_locked() {
 int gen_song_md(char *buf) {
     buf[0] = ((21 + s.song_md.num_regions + s.song_md.num_users) / 2) * 2; // account for parity
     buf[1] = s.song_md.owner_id;
-    memcpy(buf + 2, s.song_md.aes_iv, BLOCK_LEN);
-    buf[18] = s.song_md.num_regions;
-    buf[19] = s.song_md.num_users;
+    buf[2] = s.song_md.num_regions;
+    buf[3] = s.song_md.num_users;
+    memcpy(buf + 4, s.song_md.aes_iv, BLOCK_LEN);
     memcpy(buf + 20, s.song_md.rids, s.song_md.num_regions);
     memcpy(buf + 20 + s.song_md.num_regions, s.song_md.uids, s.song_md.num_users);
 
@@ -397,7 +397,7 @@ void play_song() {
     // from where the metadata plus its paddedBytes left off, decrypt that information here
     /*
         char currIv[BLOCK_LEN];
-        memcpy(currIv, c.song_md.aes_iv, BLOCK_LEN)
+        memcpy(currIv, c->song_md.aes_iv, BLOCK_LEN)
         decryptAndMac(
             currIv
             DRM_KEY,

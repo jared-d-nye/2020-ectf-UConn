@@ -104,8 +104,8 @@ def create_metadata(regions, user, user_secret_location, region_info, aes_iv):
     # note: metadata must be an even length since each sample is 2B long
     # and ARM processors require memory accesses to be aligned to the type size
     metadata = struct.pack(
-        '=3B{regions_length}s{regions_len_2}s'.format(regions_length=len(regions), regions_len_2=len(regions) % 2),
-        int(user_secrets[user]['id']), aes_iv, len(regions), 0,
+        '=3B{aes_iv_len}s{regions_length}s{regions_len_2}s'.format(aes_iv_len=len(aes_iv), regions_length=len(regions), regions_len_2=len(regions) % 2),
+        int(user_secrets[user]['id']), len(regions), 0, aes_iv
         bytes([region_info[str(r)] for r in regions]),
         b'\x00' if len(regions) % 2 else b'')
 

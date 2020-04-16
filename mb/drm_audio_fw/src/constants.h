@@ -60,9 +60,9 @@ typedef struct {
 typedef struct __attribute__((__packed__)) {
     char md_size;
     char owner_id;
-    char aes_iv[AES_BLOCK_SIZE];
     char num_regions;
     char num_users;
+    char aes_iv[AES_BLOCK_SIZE];
     char buf[];
 } drm_md;
 
