@@ -154,10 +154,10 @@ void load_song_md() {
 /*
 
     decryptAndMac(
-        c->song.aes_iv,
+        c->song.md.aes_iv,
         DRM_KEY,
         XPAR_MB_DMA_AXI_BRAM_CTRL_0_S_AXI_BASEADDR,
-        c->song,
+        get_drm_song(c->song),
         BLOCK_LEN * 2
     );
 */
@@ -397,7 +397,7 @@ void play_song() {
     // from where the metadata plus its paddedBytes left off, decrypt that information here
     /*
         char currIv[BLOCK_LEN];
-        memcpy(currIv, c->song_md.aes_iv, BLOCK_LEN)
+        memcpy(currIv, c->song.md.aes_iv, BLOCK_LEN);
         decryptAndMac(
             currIv
             DRM_KEY,

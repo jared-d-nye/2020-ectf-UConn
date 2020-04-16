@@ -46,8 +46,6 @@ class ProtectedSong(object):
         nonce = aes_iv
         p = Popen(['./speck', '-e'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
         plaintext = clear_wav.read()
-        # add metadata to front of songdata
-        plaintext = self.metadata + plaintext
         songLength = len(plaintext)
         r = songLength % 16
         # Pad plaintext with 0's until its length is a multiple of 16
@@ -58,6 +56,7 @@ class ProtectedSong(object):
         ciphertext = p.communicate(input=speck_input)[0]
         stdout = sys.stdout
         sys.stdout = open(os.path.abspath(file_location), "w")
+        sys.stdout.buffer.write(self.metadata)
         sys.stdout.buffer.write(nonce)
         sys.stdout.buffer.write(ciphertext)
         sys.stdout.close()
