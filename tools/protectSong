@@ -46,6 +46,32 @@ class ProtectedSong(object):
         nonce = aes_iv
         p = Popen(['./speck', '-e'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
         plaintext = clear_wav.read()
+        plainlist = list(plaintext)
+
+        # Write the file size from the bytes object to the output file
+        file_size = struct.pack('<h',plainlist[7])
+        file_size += struct.pack('<h',plainlist[6])
+        file_size += struct.pack('<h',plainlist[5])
+        file_size += struct.pack('<h',plainlist[4])
+        filelist = list(file_size)
+        filelist.pop(7)
+        filelist.pop(5)
+        filelist.pop(3)
+        filelist.pop(1)
+        file_size = bytes(filelist)
+
+        # Write the song data (wav) size from the bytes object to the output file
+        wav_size = struct.pack('<h',plainlist[43])
+        wav_size += struct.pack('<h',plainlist[42])
+        wav_size += struct.pack('<h',plainlist[41])
+        wav_size += struct.pack('<h',plainlist[40])
+        wavlist = list(wav_size)
+        wavlist.pop(7)
+        wavlist.pop(5)
+        wavlist.pop(3)
+        wavlist.pop(1)
+        wav_size = bytes(wavlist)
+
         songLength = len(plaintext)
         r = songLength % 16
         # Pad plaintext with 0's until its length is a multiple of 16

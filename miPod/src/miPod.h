@@ -19,6 +19,7 @@
 #define USERNAME_SZ 64
 #define MAX_PIN_SZ 64
 #define MAX_SONG_SZ (1<<25)
+#define AES_BLOCK_SIZE 16
 
 // printing utility
 #define MP_PROMPT "mP> "
@@ -48,6 +49,8 @@ typedef struct __attribute__((__packed__)) {
     char owner_id;
     char num_regions;
     char num_users;
+    char aes_iv[AES_BLOCK_SIZE]
+    // give this buffer a definite value so we can still write song data
     char buf[];
 } drm_md;
 
@@ -55,11 +58,10 @@ typedef struct __attribute__((__packed__)) {
 // struct to interpret shared buffer as a drm song file
 // packing values skip over non-relevant WAV metadata
 typedef struct __attribute__((__packed__)) {
-    char packing1[4];
     int file_size;
-    char packing2[32];
     int wav_size;
     drm_md md;
+    // byte[] songdata;
 } song;
 
 // accessors for variable-length metadata fields

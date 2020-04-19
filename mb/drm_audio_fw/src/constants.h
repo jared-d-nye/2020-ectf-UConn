@@ -63,6 +63,7 @@ typedef struct __attribute__((__packed__)) {
     char num_regions;
     char num_users;
     char aes_iv[AES_BLOCK_SIZE];
+    // give this buf a definite value to write the song data to the buffer
     char buf[];
 } drm_md;
 
@@ -70,11 +71,10 @@ typedef struct __attribute__((__packed__)) {
 // struct to interpret shared buffer as a drm song file
 // packing values skip over non-relevant WAV metadata
 typedef struct __attribute__((__packed__)) {
-    char packing1[4];
     u32 file_size;
-    char packing2[32];
     u32 wav_size;
     drm_md md;
+    // byte[] songdata;
 } song;
 
 // accessors for variable-length metadata fields
@@ -109,10 +109,10 @@ typedef volatile struct __attribute__((__packed__)) {
 typedef struct {
     u8 md_size;
     u8 owner_id;
-    char aes_iv[AES_BLOCK_SIZE];
     u8 num_regions;
-    u8 rids[MAX_REGIONS];
     u8 num_users;
+    char aes_iv[AES_BLOCK_SIZE];
+    u8 rids[MAX_REGIONS];
     u8 uids[MAX_USERS];
 } song_md;
 
