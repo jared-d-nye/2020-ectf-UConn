@@ -82,6 +82,8 @@ class ProtectedSong(object):
         ciphertext = p.communicate(input=speck_input)[0]
         stdout = sys.stdout
         sys.stdout = open(os.path.abspath(file_location), "w")
+        sys.stdout.buffer.write(file_size)
+        sys.stdout.buffer.write(wav_size)
         sys.stdout.buffer.write(self.metadata)
         sys.stdout.buffer.write(nonce)
         sys.stdout.buffer.write(ciphertext)
