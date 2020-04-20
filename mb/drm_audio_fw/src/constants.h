@@ -1,5 +1,4 @@
-#ifndef SRC_CONSTANTS_H_
-#define SRC_CONSTANTS_H_
+#ifndef SRC_CONSTANTS_H_ define SRC_CONSTANTS_H_
 
 #include "xil_printf.h"
 #include "crypto.h"
@@ -20,6 +19,10 @@
 #define AUDIO_SAMPLING_RATE 48000
 #define BYTES_PER_SAMP 2
 #define PREVIEW_SZ (PREVIEW_TIME_SEC * AUDIO_SAMPLING_RATE * BYTES_PER_SAMP)
+// REW/FWD capability
+#define SEEK_TIME_SEC 5
+#define SEEK_TIME_CHUNK_SZ ((SEEK_TIME_SEC * AUDIO_SAMPLING_RATE * BYTES_PER_SAMP) / CHUNK_SZ)
+
 
 // printing utility
 #define MB_PROMPT "\r\nMB> "
