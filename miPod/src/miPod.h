@@ -50,7 +50,6 @@ typedef struct __attribute__((__packed__)) {
     char num_regions;
     char num_users;
     char aes_iv[AES_BLOCK_SIZE]
-    // give this buffer a definite value so we can still write song data
     char buf[];
 } drm_md;
 
@@ -58,7 +57,9 @@ typedef struct __attribute__((__packed__)) {
 // struct to interpret shared buffer as a drm song file
 // packing values skip over non-relevant WAV metadata
 typedef struct __attribute__((__packed__)) {
+    char packing1[4];
     int file_size;
+    char packing[32];
     int wav_size;
     drm_md md;
     // byte[] songdata;

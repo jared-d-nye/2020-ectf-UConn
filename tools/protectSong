@@ -46,44 +46,20 @@ class ProtectedSong(object):
         nonce = aes_iv
         p = Popen(['./speck', '-e'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
         plaintext = clear_wav.read()
-        plainlist = list(plaintext)
+        file_data = plaintext[0:43]
+        song_data = plaintext[44:]
 
-        # Write the file size from the bytes object to the output file
-        file_size = struct.pack('<h',plainlist[7])
-        file_size += struct.pack('<h',plainlist[6])
-        file_size += struct.pack('<h',plainlist[5])
-        file_size += struct.pack('<h',plainlist[4])
-        filelist = list(file_size)
-        filelist.pop(7)
-        filelist.pop(5)
-        filelist.pop(3)
-        filelist.pop(1)
-        file_size = bytes(filelist)
-
-        # Write the song data (wav) size from the bytes object to the output file
-        wav_size = struct.pack('<h',plainlist[43])
-        wav_size += struct.pack('<h',plainlist[42])
-        wav_size += struct.pack('<h',plainlist[41])
-        wav_size += struct.pack('<h',plainlist[40])
-        wavlist = list(wav_size)
-        wavlist.pop(7)
-        wavlist.pop(5)
-        wavlist.pop(3)
-        wavlist.pop(1)
-        wav_size = bytes(wavlist)
-
-        songLength = len(plaintext)
+        songLength = len(song_data)
         r = songLength % 16
         # Pad plaintext with 0's until its length is a multiple of 16
         if (r != 0):
             for x in range (0, (16 - r)):
                 plaintext += bytes([0]) 
-        speck_input = b''.join([nonce, key, f'{len(plaintext):012d}'.encode(), plaintext])
+        speck_input = b''.join([nonce, key, f'{len(song_data):012d}'.encode(), song_data])
         ciphertext = p.communicate(input=speck_input)[0]
         stdout = sys.stdout
         sys.stdout = open(os.path.abspath(file_location), "w")
-        sys.stdout.buffer.write(file_size)
-        sys.stdout.buffer.write(wav_size)
+        sys.stdout.buffer.write(file_data)
         sys.stdout.buffer.write(self.metadata)
         sys.stdout.buffer.write(nonce)
         sys.stdout.buffer.write(ciphertext)
