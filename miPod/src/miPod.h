@@ -59,10 +59,9 @@ typedef struct __attribute__((__packed__)) {
 typedef struct __attribute__((__packed__)) {
     char packing1[4];
     int file_size;
-    char packing[32];
+    char packing2[32];
     int wav_size;
     drm_md md;
-    // byte[] songdata;
 } song;
 
 // accessors for variable-length metadata fields
