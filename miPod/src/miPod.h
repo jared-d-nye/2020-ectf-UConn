@@ -49,7 +49,7 @@ typedef struct __attribute__((__packed__)) {
     char owner_id;
     char num_regions;
     char num_users;
-    char aes_iv[AES_BLOCK_SIZE]
+    char aes_iv[AES_BLOCK_SIZE];
     char buf[];
 } drm_md;
 
