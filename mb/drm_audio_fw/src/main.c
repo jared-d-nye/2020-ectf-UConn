@@ -309,8 +309,7 @@ void query_song() {
 
     // copy owner name
     uid_to_username(s.song_md.owner_id, &name, FALSE);
-    if (((char *)c->query.owner) == (name))
-        strcpy((char *)c->query.owner, name);
+    strcpy((char *)c->query.owner, name);
 
     // copy region names
     for (int i = 0; i < s.song_md.num_regions; i++) {
