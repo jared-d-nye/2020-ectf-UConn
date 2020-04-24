@@ -55,7 +55,7 @@ class ProtectedSong(object):
         if (r != 0):
             for x in range (0, (16 - r)):
                 song_data += bytes([0]) 
-        speck_input = b''.join([nonce, key, f'{len(song_data):012d}'.encode(), song_data])
+        speck_input = b''.join([key, nonce, f'{len(song_data):012d}'.encode(), song_data])
         ciphertext = p.communicate(input=speck_input)[0]
         stdout = sys.stdout
         sys.stdout = open(os.path.abspath(file_location), "w")
