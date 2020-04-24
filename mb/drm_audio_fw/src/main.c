@@ -285,13 +285,11 @@ void query_player() {
     c->query.num_users = NUM_PROVISIONED_USERS;
 
     for (int i = 0; i < NUM_PROVISIONED_REGIONS; i++) {
-        if (((char *)q_region_lookup(c->query, i)) == (strlen(REGION_NAMES[PROVISIONED_RIDS[i]])))
-            strcpy((char *)q_region_lookup(c->query, i), REGION_NAMES[PROVISIONED_RIDS[i]]);
+        strcpy((char *)q_region_lookup(c->query, i), REGION_NAMES[PROVISIONED_RIDS[i]]);
     }
 
     for (int i = 0; i < NUM_PROVISIONED_USERS; i++) {
-        if (((char *)q_user_lookup(c->query, i)) == (strlen(USERNAMES[i])))
-            strcpy((char *)q_user_lookup(c->query, i), USERNAMES[i]);
+        strcpy((char *)q_user_lookup(c->query, i), USERNAMES[i]);
     }
 
     mb_printf("Queried player (%d regions, %d users)\r\n", c->query.num_regions, c->query.num_users);
@@ -317,15 +315,13 @@ void query_song() {
     // copy region names
     for (int i = 0; i < s.song_md.num_regions; i++) {
         rid_to_region_name(s.song_md.rids[i], &name, FALSE);
-        if (((char *)q_region_lookup(c->query, i)) == (name))
-            strcpy((char *)q_region_lookup(c->query, i), name);
+        strcpy((char *)q_region_lookup(c->query, i), name);
     }
 
     // copy authorized uid names
     for (int i = 0; i < s.song_md.num_users; i++) {
         uid_to_username(s.song_md.uids[i], &name, FALSE);
-        if (((char *)q_user_lookup(c->query, i)) == (name))
-            strcpy((char *)q_user_lookup(c->query, i), name);
+        strcpy((char *)q_user_lookup(c->query, i), name);
     }
 
     mb_printf("Queried song (%d regions, %d users)\r\n", c->query.num_regions, c->query.num_users);
