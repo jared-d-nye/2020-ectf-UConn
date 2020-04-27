@@ -285,11 +285,11 @@ void query_player() {
     c->query.num_users = NUM_PROVISIONED_USERS;
 
     for (int i = 0; i < NUM_PROVISIONED_REGIONS; i++) {
-        strcpy((char *)q_region_lookup(c->query, i), REGION_NAMES[PROVISIONED_RIDS[i]]);
+        strncpy((char *)q_region_lookup(c->query, i), REGION_NAMES[PROVISIONED_RIDS[i]], REGION_NAME_SZ);
     }
 
     for (int i = 0; i < NUM_PROVISIONED_USERS; i++) {
-        strcpy((char *)q_user_lookup(c->query, i), USERNAMES[i]);
+        strncpy((char *)q_user_lookup(c->query, i), USERNAMES[i], USERNAME_SZ);
     }
 
     mb_printf("Queried player (%d regions, %d users)\r\n", c->query.num_regions, c->query.num_users);
@@ -309,18 +309,18 @@ void query_song() {
 
     // copy owner name
     uid_to_username(s.song_md.owner_id, &name, FALSE);
-    strcpy((char *)c->query.owner, name);
+    strncpy((char *)c->query.owner, name, USERNAME_SZ);
 
     // copy region names
     for (int i = 0; i < s.song_md.num_regions; i++) {
         rid_to_region_name(s.song_md.rids[i], &name, FALSE);
-        strcpy((char *)q_region_lookup(c->query, i), name);
+        strncpy((char *)q_region_lookup(c->query, i), name, REGION_NAME_SZ);
     }
 
     // copy authorized uid names
     for (int i = 0; i < s.song_md.num_users; i++) {
         uid_to_username(s.song_md.uids[i], &name, FALSE);
-        strcpy((char *)q_user_lookup(c->query, i), name);
+        strncpy((char *)q_user_lookup(c->query, i), name, USERNAME_SZ);
     }
 
     mb_printf("Queried song (%d regions, %d users)\r\n", c->query.num_regions, c->query.num_users);
@@ -584,7 +584,7 @@ int main() {
             }
 
             // reset statuses and sleep to allowe player to recognize WORKING state
-            strcpy((char *)c->username, s.username);
+            strncpy((char *)c->username, s.username, USERNAME_SZ);
             c->login_status = s.logged_in;
             usleep(500);
             set_stopped();

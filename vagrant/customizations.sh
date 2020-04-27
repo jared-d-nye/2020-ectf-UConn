@@ -14,10 +14,6 @@ cc /ectf/tools/crypto/crypto.c /ectf/tools/crypto/main.c -o /ectf/tools/speck
 ### Install pycryptodome for tooling cryptography
 python3 /ectf/vagrant/genkey.py > /home/vagrant/DRM_KEY.txt
 
-## Library installation
-### Install pycryptodome for tooling cryptography
-pip3 install pycryptodome
-
 # Disable debugger
 cp /ectf/files_for_replacement/create_bd.tcl /ectf/pl/proj
 cp /ectf/files_for_replacement/create_project.tcl /ectf/pl/proj
