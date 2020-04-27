@@ -106,8 +106,8 @@ void login(char *username, char *pin) {
     }
 
     // drive DRM
-    strcpy((void*)c->username, username);
-    strcpy((void*)c->pin, pin);
+    strncpy((void*)c->username, username, USERNAME_SZ);
+    strncpy((void*)c->pin, pin, MAX_PIN_SZ);
     send_command(LOGIN);
 }
 
@@ -197,7 +197,7 @@ void share_song(char *song_name, char *username) {
         return;
     }
 
-    strcpy((char *)c->username, username);
+    strncpy((char *)c->username, username, USERNAME_SZ);
 
     // drive DRM
     send_command(SHARE);
